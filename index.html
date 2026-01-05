@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handling Disconnections</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #ffffff;
+            padding: 2rem;
+            line-height: 1.6;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .start-box {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .start-title {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .start-subtitle {
+            font-size: 1.125rem;
+            color: #374151;
+        }
+        
+        .scenario-section {
+            margin-bottom: 3rem;
+        }
+        
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid;
+        }
+        
+        .scenario-header.red {
+            border-bottom-color: #dc2626;
+        }
+        
+        .scenario-header.green {
+            border-bottom-color: #22c55e;
+        }
+        
+        .scenario-header.orange {
+            border-bottom-color: #ea580c;
+        }
+        
+        .scenario-number {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .scenario-number.red {
+            background: #dc2626;
+        }
+        
+        .scenario-number.green {
+            background: #22c55e;
+        }
+        
+        .scenario-number.orange {
+            background: #ea580c;
+        }
+        
+        .scenario-title-group {
+            flex: 1;
+        }
+        
+        .scenario-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .scenario-who {
+            font-size: 1rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .scenario-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .scenario-badge.red {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .scenario-badge.green {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .scenario-badge.orange {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+        
+        .scenario-content {
+            padding-left: 4rem;
+        }
+        
+        .action-block {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .action-block-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        
+        .action-list {
+            list-style: none;
+        }
+        
+        .action-list li {
+            margin-bottom: 0.75rem;
+            padding-left: 1.75rem;
+            position: relative;
+            font-size: 1rem;
+            color: #4b5563;
+        }
+        
+        .action-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #3b82f6;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        
+        .callout-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .callout-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .callout-text {
+            color: #374151;
+            font-size: 0.95rem;
+        }
+        
+        .best-practice {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .best-practice-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+        }
+        
+        .best-practice-text {
+            color: #374151;
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .scenario-content {
+                padding-left: 0;
+                margin-top: 1rem;
+            }
+            
+            .scenario-header {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- Start Box -->
+        <div class="start-box">
+            <div class="start-title">Someone Dropped from the Room</div>
+            <div class="start-subtitle">Follow the protocol based on who dropped</div>
+        </div>
+        
+        <!-- Scenario 1: Active Participant -->
+        <div class="scenario-section">
+            <div class="scenario-header red">
+                <div class="scenario-number red">1</div>
+                <div class="scenario-title-group">
+                    <div class="scenario-title">Active Participant Drops</div>
+                    <div class="scenario-who">Taking Attorney, Defending Attorney, Court Reporter, Deponent/Witness, or Interpreter</div>
+                </div>
+                <div class="scenario-badge red">Interrupt Now</div>
+            </div>
+            
+            <div class="scenario-content">
+                <div class="action-block">
+                    <div class="action-block-title">What to Do:</div>
+                    <ul class="action-list">
+                        <li><strong>Interrupt the deposition immediately</strong></li>
+                        <li>State clearly: "Excuse me, counsel, [participant] has dropped from the call"</li>
+                        <li><strong>Recommend going off the record</strong></li>
+                        <li>Wait for the participant to rejoin before continuing</li>
+                        <li>Alert <a href="https://stenogroup.slack.com/archives/C01GS35HLQ3" target="_blank">#video-help</a> if they don't rejoin quickly</li>
+                    </ul>
+                    
+                    <div class="callout-box">
+                        <div class="callout-title">🚨 Critical Rule:</div>
+                        <div class="callout-text">Active participants are essential to the deposition. You <strong>must</strong> interrupt and go off the record immediately when any active participant drops.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scenario 2: Non-Active Participant -->
+        <div class="scenario-section">
+            <div class="scenario-header green">
+                <div class="scenario-number green">2</div>
+                <div class="scenario-title-group">
+                    <div class="scenario-title">Non-Active Participant Drops</div>
+                    <div class="scenario-who">Observers, non-active opposing counsel, or other attendees</div>
+                </div>
+                <div class="scenario-badge green">No Action</div>
+            </div>
+            
+            <div class="scenario-content">
+                <div class="action-block">
+                    <div class="action-block-title">What to Do:</div>
+                    <ul class="action-list">
+                        <li><strong>Do NOT interrupt</strong> the deposition</li>
+                        <li>Non-active participants may leave or join at any time</li>
+                        <li>Continue recording normally without disruption</li>
+                        <li>Make a note if needed for your own records</li>
+                    </ul>
+                    
+                    <div class="callout-box">
+                        <div class="callout-title">✓ Key Point:</div>
+                        <div class="callout-text">Observers and non-active participants do not require any interruption when they drop from the call.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scenario 3: You Drop -->
+        <div class="scenario-section">
+            <div class="scenario-header orange">
+                <div class="scenario-number orange">3</div>
+                <div class="scenario-title-group">
+                    <div class="scenario-title">YOU (Videographer) Drop</div>
+                    <div class="scenario-who">You lost connection to the deposition</div>
+                </div>
+                <div class="scenario-badge orange">Urgent</div>
+            </div>
+            
+            <div class="scenario-content">
+                <div class="action-block">
+                    <div class="action-block-title">Protocol to Follow:</div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">1. Stay Calm & Get Ready</div>
+                        <ul class="action-list">
+                            <li>Have Slack ready on your phone</li>
+                            <li>If internet is down: disconnect from WiFi, switch to cellular data</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">2. Communicate Immediately</div>
+                        <ul class="action-list">
+                            <li>Alert <a href="https://stenogroup.slack.com/archives/C01GS35HLQ3" target="_blank">#video-help</a> via Slack: job number, your name, "I dropped from the room"</li>
+                            <li>Use the Video Help Request Bot if available</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <div style="font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">3. Rejoin & Document</div>
+                        <ul class="action-list">
+                            <li>Rejoin as quickly as possible using the same meeting link</li>
+                            <li>If you can't rejoin, keep <a href="https://stenogroup.slack.com/archives/C01GS35HLQ3" target="_blank">#video-help</a> updated via phone</li>
+                            <li>Once back: <strong>check recording status immediately</strong></li>
+                            <li>Alert <a href="https://stenogroup.slack.com/archives/C01GS35HLQ3" target="_blank">#video-help</a> if recording was interrupted</li>
+                            <li>Document the drop in your post-depo notes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Best Practice -->
+        <div class="best-practice">
+            <div class="best-practice-title">💡 Best Practice</div>
+            <div class="best-practice-text">
+                When interrupting for an active participant drop, keep it brief and clear. State who dropped, then immediately recommend going off the record. Let counsel and the Court Reporter determine next steps.
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
